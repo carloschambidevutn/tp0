@@ -28,11 +28,12 @@ int main(void)
 
 	ip = config_get_string_value(config, "IP");
 	puerto = config_get_string_value(config, "PUERTO");
-	valor = config_get_string_value(config, "VALOR");
+	valor = config_get_string_value(config, "CLAVE");
 
 	log_info(logger, "IP: %s  (sacado del cliente.config)", ip);
 	log_info(logger, "PUERTO: %s ", puerto);
 	log_info(logger, "VALOR: %s ", valor);
+	
 
 
 
@@ -55,6 +56,9 @@ int main(void)
 	conexion = crear_conexion(ip, puerto);
 
 	// Enviamos al servidor el valor de CLAVE como mensaje
+
+	enviar_mensaje(valor, conexion);
+	
 
 	// Armamos y enviamos el paquete
 	paquete(conexion);
@@ -91,7 +95,7 @@ void leer_consola(t_log* logger)
 	leido = readline("> ");
 
 	// El resto, las vamos leyendo y logueando hasta recibir un string vacío
-	while(*leido != '\0') {
+	while(strcmp(leido, "")) {
 		log_info(logger, "%s", leido);
 		leido = readline("> ");
 	}
@@ -103,18 +107,26 @@ void leer_consola(t_log* logger)
 void paquete(int conexion)
 {
 	// Ahora toca lo divertido!
-	char* leido;
-	t_paquete* paquete;
+	char* leido = readline("> ");
+	t_paquete* paquete = crear_paquete();
 
 	// Leemos y esta vez agregamos las lineas al paquete
-
-
+	while(strcmp(leido, "")){
+		agregar_a_paquete(paquete, leido, 41 );
+		enviar_paquete(paquete, conexion);
+		leido = readline("> ");
+	}
 	// ¡No te olvides de liberar las líneas y el paquete antes de regresar!
-	
+	free(leido);
+	leido = NULL;
+	eliminar_paquete(paquete);
 }
 
 void terminar_programa(int conexion, t_log* logger, t_config* config)
 {
 	/* Y por ultimo, hay que liberar lo que utilizamos (conexion, log y config) 
 	  con las funciones de las commons y del TP mencionadas en el enunciado */
+	liberar_conexion(conexion);
+	log_destroy(logger);
+	config_destroy(config);
 }
