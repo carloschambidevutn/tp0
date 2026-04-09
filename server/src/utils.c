@@ -16,7 +16,12 @@ int iniciar_servidor(void)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	getaddrinfo(NULL, PUERTO, &hints, &servinfo);
+	int err = getaddrinfo(NULL, PUERTO, &hints, &servinfo);
+
+	if (err != 0){
+		log_error(logger, "Error en getaddrinfo");
+		return EXIT_FAILURE;
+	}
 
 	// Creamos el socket de escucha del servidor
 	socket_servidor = socket(servinfo->ai_family,
@@ -32,7 +37,7 @@ int iniciar_servidor(void)
 	
 
 	freeaddrinfo(servinfo);
-	log_trace(logger, "Listo para escuchar a mi cliente");
+	log_info(logger, "Listo para escuchar a mi cliente");
 
 	return socket_servidor;
 }

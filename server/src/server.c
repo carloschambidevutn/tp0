@@ -4,7 +4,6 @@ int main(void) {
 	logger = log_create("log.log", "Servidor", 1, LOG_LEVEL_DEBUG);
 
 	int server_fd = iniciar_servidor();
-	log_info(logger, "Servidor listo para recibir al cliente");
 	int cliente_fd = esperar_cliente(server_fd);
 
 	t_list* lista;
@@ -18,6 +17,11 @@ int main(void) {
 			lista = recibir_paquete(cliente_fd);
 			log_info(logger, "Me llegaron los siguientes valores:\n");
 			list_iterate(lista, (void*) iterator);
+			for (int i = 0; i < list_size(lista); i++) {
+				char *valor = list_get(lista, i);
+				free(valor);
+			}
+			list_destroy(lista);
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
@@ -27,6 +31,7 @@ int main(void) {
 			break;
 		}
 	}
+	log_destroy(logger);
 	return EXIT_SUCCESS;
 }
 
