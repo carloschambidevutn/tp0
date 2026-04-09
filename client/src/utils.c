@@ -36,11 +36,17 @@ int crear_conexion(char *ip, char* puerto)
 
 
 	// Ahora que tenemos el socket, vamos a conectarlo
-	connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
-
+	int err = connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen);
+		
+	
 	freeaddrinfo(server_info);
 
-	return socket_cliente;
+	if (err == 0){
+		return socket_cliente;
+	} else {
+		return -1;
+	}
+
 }
 
 void enviar_mensaje(char* mensaje, int socket_cliente)

@@ -55,6 +55,13 @@ int main(void)
 	// Creamos una conexión hacia el servidor
 	conexion = crear_conexion(ip, puerto);
 
+	if (conexion == -1){
+		log_error(logger, "HUBO ERROR EN CONECTAR EL SOCKET CLIENTE");
+		terminar_programa(-1, logger, config);
+		exit(EXIT_FAILURE);
+	} else{
+		log_info(logger, "CONEXION SOCKET CLIENTE EXITOSA");
+	}
 	// Enviamos al servidor el valor de CLAVE como mensaje
 
 	enviar_mensaje(valor, conexion);
@@ -71,7 +78,7 @@ int main(void)
 
 t_log* iniciar_logger(void)
 {
-	t_log* nuevo_logger = log_create("cliente.log", "LOGGER CREADO", true, LOG_LEVEL_INFO );
+	t_log* nuevo_logger = log_create("cliente.log", "LOGGER", true, LOG_LEVEL_INFO );
 
 	return nuevo_logger;
 }
@@ -95,8 +102,9 @@ void leer_consola(t_log* logger)
 	leido = readline("> ");
 
 	// El resto, las vamos leyendo y logueando hasta recibir un string vacío
-	while(strcmp(leido, "")) {
+	while(strcmp(leido, "")){
 		log_info(logger, "%s", leido);
+		free(leido);
 		leido = readline("> ");
 	}
 	// ¡No te olvides de liberar las lineas antes de regresar!
@@ -111,14 +119,14 @@ void paquete(int conexion)
 	t_paquete* paquete = crear_paquete();
 
 	// Leemos y esta vez agregamos las lineas al paquete
-	while(strcmp(leido, "")){
-		agregar_a_paquete(paquete, leido, 41 );
-		enviar_paquete(paquete, conexion);
+	while(leido != NULL && strcmp(leido, "") != 0){
+		agregar_a_paquete(paquete, leido, strlen(leido) +1 );
+		free(leido);  
 		leido = readline("> ");
 	}
 	// ¡No te olvides de liberar las líneas y el paquete antes de regresar!
 	free(leido);
-	leido = NULL;
+	enviar_paquete(paquete, conexion);
 	eliminar_paquete(paquete);
 }
 
@@ -126,7 +134,7 @@ void terminar_programa(int conexion, t_log* logger, t_config* config)
 {
 	/* Y por ultimo, hay que liberar lo que utilizamos (conexion, log y config) 
 	  con las funciones de las commons y del TP mencionadas en el enunciado */
-	liberar_conexion(conexion);
+	if (conexion != -1) liberar_conexion(conexion);
 	log_destroy(logger);
 	config_destroy(config);
 }
